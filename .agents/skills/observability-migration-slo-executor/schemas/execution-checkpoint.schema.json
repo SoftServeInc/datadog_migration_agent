@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cisco-innovation.local/schemas/slo-execution-checkpoint.schema.json",
+  "title": "SLO execution checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_session_id", "wave_id", "plan_hash", "manifest_hash",
+    "authorization_hash", "status", "created_at", "updated_at", "result",
+    "pending_create_ref", "failure_category", "checkpoint_hash"
+  ],
+  "properties": {
+    "source_session_id": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{7,63}$"},
+    "wave_id": {"type": "string", "pattern": "^slo-wave-[a-zA-Z0-9][a-zA-Z0-9_-]{2,27}$"},
+    "plan_hash": {"$ref": "#/$defs/hash"},
+    "manifest_hash": {"$ref": "#/$defs/hash"},
+    "authorization_hash": {"$ref": "#/$defs/hash"},
+    "status": {"enum": ["AUTHORIZED", "EXECUTING", "COMPLETED", "VALIDATED", "FAILED"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "result": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/result"}]},
+    "pending_create_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/object_ref"}]},
+    "failure_category": {
+      "oneOf": [{"type": "null"}, {"type": "string", "minLength": 1, "maxLength": 128}]
+    },
+    "checkpoint_hash": {"$ref": "#/$defs/hash"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"enum": ["COMPLETED", "VALIDATED"]}}},
+      "then": {
+        "properties": {
+          "result": {
+            "allOf": [
+              {"$ref": "#/$defs/result"},
+              {"properties": {"validated": {"const": true}}}
+            ]
+          },
+          "pending_create_ref": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"pending_create_ref": {"type": "string"}}},
+      "then": {"properties": {"status": {"enum": ["EXECUTING", "FAILED"]}}}
+    }
+  ],
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "object_ref": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"},
+    "result": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "object_ref", "source_refs", "execution_key", "target_kind",
+        "outcome", "target_id", "validated"
+      ],
+      "properties": {
+        "object_ref": {"$ref": "#/$defs/object_ref"},
+        "source_refs": {
+          "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/object_ref"}
+        },
+        "execution_key": {"$ref": "#/$defs/hash"},
+        "target_kind": {"const": "slo"},
+        "outcome": {"enum": ["created", "reused"]},
+        "target_id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "validated": {"type": "boolean"}
+      }
+    }
+  }
+}

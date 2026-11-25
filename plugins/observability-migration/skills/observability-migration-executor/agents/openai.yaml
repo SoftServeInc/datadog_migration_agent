@@ -1,0 +1,7 @@
+interface:
+  display_name: "Observability Migration Executor"
+  short_description: "Internal detector migration adapter"
+  default_prompt: "Use $observability-migration-executor internally to compile and execute detector operations under the orchestrator's migration authorization."
+
+policy:
+  allow_implicit_invocation: false

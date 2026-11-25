@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "observability-migration-actions": {
+      "command": "python3",
+      "args": ["skills/observability-migration-orchestrator/scripts/apply_action_server.py"],
+      "cwd": "."
+    },
+    "datadog": {
+      "type": "http",
+      "url": "https://${DD_MCP_HOST:-mcp.datadoghq.com}/api/unstable/mcp-server/mcp?toolsets=${DD_MCP_TOOLSETS:-core,dashboards,alerting}"
+    },
+    "splunk-o11y-innovationlab": {
+      "type": "http",
+      "url": "${SPLUNK_MCP_GATEWAY_URL:-https://region-fra10.api.scs.splunk.com/system/mcp-gateway/v1/}",
+      "headers": {
+        "X-SF-REALM": "${SPLUNK_O11Y_INNOVATIONLAB_REALM:-eu1}",
+        "X-SF-TOKEN": "${SPLUNK_O11Y_INNOVATIONLAB_TOKEN}"
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Inventory Normalizer"
+  short_description: "Build a private vendor-neutral inventory IR"
+  default_prompt: "Use $observability-inventory-normalizer to sanitize this local inventory and build its dependency graph."

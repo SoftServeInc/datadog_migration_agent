@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Migration Orchestrator"
+  short_description: "Run a complete governed observability migration."
+  default_prompt: "Use $observability-migration-orchestrator to assess this workspace, then open the compact plan review with Full and Supported scope choices before any Splunk write."

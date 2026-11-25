@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Migration Planner"
+  short_description: "Create dependency-aware non-executable plans"
+  default_prompt: "Use $observability-migration-planner to compare strategies and create a hash-bound dry-run migration plan."

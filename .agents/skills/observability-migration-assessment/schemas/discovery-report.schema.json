@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cisco-innovation:observability:discovery-report:1.0",
+  "title": "Sanitized observability discovery assessment",
+  "type": "object",
+  "required": ["schema_version", "source_platform", "target", "summary", "inventory_summary", "hygiene_summary", "dependency_graph", "actions", "strategies", "recommended_waves", "risk_observations", "limitations", "next_action", "safety", "assessment_hash"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_platform": {"const": "datadog"},
+    "target": {"enum": ["splunk_observability_cloud", "splunk_platform", "both"]},
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["object_ref", "object_type", "target", "compatibility", "disposition", "confidence", "confidence_score", "risk_level", "effort_points", "dependency_count", "unresolved_dependency_count", "dependency_cycle_member", "dependencies", "rule_id", "rationale_code", "rationale", "proposed_target_representation", "recommended_migration_approach", "validation_strategy", "rollback_strategy"],
+        "properties": {
+          "object_ref": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"},
+          "compatibility": {"enum": ["DIRECT", "TRANSFORMABLE", "PARTIAL", "REQUIRES_REDESIGN", "MANUAL", "UNSUPPORTED", "UNKNOWN", "BLOCKED_BY_PERMISSIONS", "BLOCKED_BY_DEPENDENCY"]},
+          "disposition": {"enum": ["MIGRATE", "ADAPT", "REDESIGN", "RETIRE", "SKIP", "DEFER"]}
+          ,"confidence_score": {"type": "number", "minimum": 0, "maximum": 1}
+          ,"dependency_cycle_member": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "assessment_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "hygiene_summary": {"type": "object"},
+    "safety": {
+      "type": "object",
+      "properties": {
+        "raw_customer_data_included": {"const": false},
+        "pii_included": {"const": false},
+        "external_mutations_enabled": {"const": false},
+        "execution_available": {"const": false}
+      },
+      "required": ["raw_customer_data_included", "pii_included", "external_mutations_enabled", "execution_available"]
+    }
+  },
+  "additionalProperties": true
+}

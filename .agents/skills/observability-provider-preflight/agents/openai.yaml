@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Provider Preflight"
+  short_description: "Validate safe Datadog and Splunk access"
+  default_prompt: "Use $observability-provider-preflight to validate read-only Datadog and Splunk assessment access."

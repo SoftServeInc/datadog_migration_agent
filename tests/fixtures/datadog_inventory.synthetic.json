@@ -1,0 +1,82 @@
+{
+  "generated_at": "2026-01-01T00:00:00+00:00",
+  "source": {"platform": "Datadog"},
+  "inventory": {
+    "dashboards": [
+      {
+        "source_type": "dashboard",
+        "source_id": "dash-private-1",
+        "name": "Synthetic customer overview",
+        "queries": [{"value": "avg:private.request.count{account:sample}"}],
+        "owner_tags": ["team:sample"],
+        "widget_count": 4,
+        "complexity": "low",
+        "status": "active"
+      }
+    ],
+    "monitors": [
+      {
+        "source_type": "monitor",
+        "source_id": "100",
+        "name": "Composite A for synthetic-owner@example.test",
+        "queries": [{"value": "monitor(200) && avg:private.latency{*} > 2"}],
+        "complexity": "medium",
+        "status": "enabled"
+      },
+      {
+        "source_type": "monitor",
+        "source_id": "200",
+        "name": "Composite B",
+        "queries": [{"value": "monitor(100) || logs(\"private token\")"}],
+        "owner_tags": ["team:sample"],
+        "complexity": "high",
+        "status": "enabled"
+      }
+    ],
+    "slos": [
+      {
+        "source_type": "slo",
+        "source_id": "slo-private-1",
+        "name": "Synthetic availability",
+        "monitor_ids": ["100", "999"],
+        "complexity": "medium",
+        "status": "active"
+      }
+    ],
+    "synthetics": [
+      {
+        "source_type": "synthetic",
+        "source_id": "test-private-1",
+        "name": "Private sign-in journey",
+        "complexity": "high",
+        "status": "active"
+      }
+    ],
+    "log_pipelines": [
+      {
+        "source_type": "log_pipeline",
+        "source_id": "pipe-private-1",
+        "name": "Private log normalization",
+        "queries": [{"value": "@customer:sample"}],
+        "processor_count": 3,
+        "complexity": "medium",
+        "status": "enabled"
+      }
+    ]
+  },
+  "counts": {
+    "dashboards": 1,
+    "monitors": 2,
+    "slos": 1,
+    "synthetics": 1,
+    "log_pipelines": 1
+  },
+  "access": {
+    "dashboards": "available",
+    "monitors": "available",
+    "slos": "available",
+    "synthetics": "available",
+    "log_pipelines": "available"
+  },
+  "errors": []
+}

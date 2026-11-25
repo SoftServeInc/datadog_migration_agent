@@ -1,0 +1,26 @@
+{
+  "name": "observability-migration",
+  "version": "1.0.0+codex.20260829235238",
+  "description": "Governed Datadog to Splunk Observability Cloud migration with resumable execution, validation, and rollback.",
+  "author": {
+    "name": "Cisco Innovation"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Observability Migration",
+    "shortDescription": "Migrate Datadog configuration to Splunk safely.",
+    "longDescription": "Discovers and normalizes Datadog configuration, reviews compatibility and scope, executes an immutable approved bundle, validates target objects, resumes from checkpoints, and rolls back only session-owned resources.",
+    "developerName": "Cisco Innovation",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Assess and migrate Datadog to Splunk Observability Cloud.",
+      "Resume my existing observability migration.",
+      "Show migration progress and validation results."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

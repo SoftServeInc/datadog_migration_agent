@@ -1,0 +1,4 @@
+interface:
+  display_name: "Datadog Configuration Discovery"
+  short_description: "Collect authorized read-only Datadog inventory"
+  default_prompt: "Use $datadog-configuration-discovery to collect an approved read-only Datadog migration inventory."

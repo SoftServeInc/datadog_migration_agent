@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/observability/apply-approval.schema.json",
+  "title": "Migration Apply Authorization",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "approval_id", "approval_number", "approval_scope", "actor_role", "approved_at", "session_id", "plan_hash", "bundle_hash", "target_binding", "authorized_actions", "external_mutations_authorized", "approval_hash"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "approval_id": {"type": "string", "pattern": "^apply-approval-[a-f0-9]{16}$"},
+    "approval_number": {"const": 2},
+    "approval_scope": {"const": "immutable_observability_execution_bundle"},
+    "actor_role": {"enum": ["customer", "authorized_operator"]},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "session_id": {"type": "string", "minLength": 8},
+    "plan_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "bundle_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "target_binding": {"type": "object"},
+    "authorized_actions": {"type": "array", "items": {"enum": ["CREATE", "UPDATE", "UPSERT", "REUSE"]}, "uniqueItems": true},
+    "external_mutations_authorized": {"const": true},
+    "approval_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

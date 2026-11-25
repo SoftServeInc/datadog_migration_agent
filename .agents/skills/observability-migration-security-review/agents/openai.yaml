@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Migration Security Review"
+  short_description: "Review migration privacy and safety controls"
+  default_prompt: "Use $observability-migration-security-review to verify the migration workflow's authorization and privacy invariants."

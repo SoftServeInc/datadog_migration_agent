@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cisco-innovation.local/schemas/execution-checkpoint.schema.json",
+  "title": "Splunk migration execution checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_session_id", "wave_id", "plan_hash", "manifest_hash", "authorization_hash", "status", "created_at", "updated_at", "results", "pending_create_refs", "created_count", "reused_count", "validated_count", "failure_category", "checkpoint_hash"],
+  "properties": {
+    "source_session_id": {"type": "string"},
+    "wave_id": {"type": "string"},
+    "plan_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "manifest_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "authorization_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "status": {"enum": ["AUTHORIZED", "EXECUTING", "PARTIAL", "COMPLETED", "VALIDATED", "FAILED"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "results": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["object_ref", "execution_key", "target_kind", "outcome", "target_id", "validated"],
+        "properties": {
+          "object_ref": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"},
+          "execution_key": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "target_kind": {"const": "detector"},
+          "outcome": {"enum": ["created", "reused"]},
+          "target_id": {"type": "string", "minLength": 1, "maxLength": 256},
+          "validated": {"type": "boolean"}
+        }
+      }
+    },
+    "pending_create_refs": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"}},
+    "created_count": {"type": "integer", "minimum": 0, "maximum": 10},
+    "reused_count": {"type": "integer", "minimum": 0, "maximum": 10},
+    "validated_count": {"type": "integer", "minimum": 0, "maximum": 10},
+    "failure_category": {"type": ["string", "null"]},
+    "checkpoint_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

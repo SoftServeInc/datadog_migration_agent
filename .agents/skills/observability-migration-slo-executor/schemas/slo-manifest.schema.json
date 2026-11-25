@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cisco-innovation.local/schemas/slo-manifest.schema.json",
+  "title": "Create-only SLO manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "manifest_id", "source_session_id", "plan_hash",
+    "plan_review_approval_hash", "source_binding", "target", "wave_id",
+    "max_creates", "sealed_at", "entry", "safety", "manifest_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "manifest_id": {"type": "string", "pattern": "^slo-manifest-[a-f0-9]{16}$"},
+    "source_session_id": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{7,63}$"},
+    "plan_hash": {"$ref": "#/$defs/hash"},
+    "plan_review_approval_hash": {"$ref": "#/$defs/hash"},
+    "source_binding": {"$ref": "#/$defs/source_binding"},
+    "target": {"const": "splunk_observability_cloud"},
+    "wave_id": {"type": "string", "pattern": "^slo-wave-[a-zA-Z0-9][a-zA-Z0-9_-]{2,27}$"},
+    "max_creates": {"const": 1},
+    "sealed_at": {"type": "string", "format": "date-time"},
+    "entry": {"$ref": "#/$defs/entry"},
+    "safety": {"$ref": "#/$defs/safety"},
+    "manifest_hash": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "object_ref": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"},
+    "source_binding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["binding_method", "inventory_hash", "inventory_ir_hash"],
+      "properties": {
+        "binding_method": {"const": "phase1_local_inventory_ir_rebuild_v1"},
+        "inventory_hash": {"$ref": "#/$defs/hash"},
+        "inventory_ir_hash": {"$ref": "#/$defs/hash"}
+      }
+    },
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "object_ref", "source_refs", "target_kind", "operation", "execution_key",
+        "exact_name", "payload", "payload_hash", "translation_method", "differences",
+        "automatic_assurance"
+      ],
+      "properties": {
+        "object_ref": {"$ref": "#/$defs/object_ref"},
+        "source_refs": {
+          "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/object_ref"}
+        },
+        "target_kind": {"const": "slo"},
+        "operation": {"const": "CREATE_SLO"},
+        "execution_key": {"$ref": "#/$defs/hash"},
+        "exact_name": {"type": "string", "minLength": 1, "maxLength": 255},
+        "payload": {"$ref": "#/$defs/payload"},
+        "payload_hash": {"$ref": "#/$defs/hash"},
+        "translation_method": {"enum": [
+          "automatic_metric_slo_burn_rate_v2",
+          "automatic_metric_slo_burn_rate_v3"
+        ]},
+        "differences": {"const": [
+          "source_warning_status_not_represented",
+          "splunk_required_breach_rule_added_disabled"
+        ]},
+        "automatic_assurance": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "allowlisted_shape_validated", "source_intent_reviewed",
+            "semantic_equivalence_proven", "disabled_effects_validated"
+          ],
+          "properties": {
+            "allowlisted_shape_validated": {"const": true},
+            "source_intent_reviewed": {"const": false},
+            "semantic_equivalence_proven": {"const": false},
+            "disabled_effects_validated": {"const": true}
+          }
+        }
+      },
+      "allOf": [{
+        "if": {
+          "properties": {
+            "translation_method": {"const": "automatic_metric_slo_burn_rate_v3"}
+          }
+        },
+        "then": {
+          "properties": {
+            "payload": {
+              "properties": {
+                "description": {"pattern": "^\\[AI-Created\\] "}
+              }
+            }
+          }
+        }
+      }]
+    },
+    "payload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "description", "type", "inputs", "targets"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 255},
+        "description": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "type": {"const": "RequestBased"},
+        "inputs": {
+          "type": "object", "additionalProperties": false,
+          "required": ["programText", "goodEventsLabel", "totalEventsLabel"],
+          "properties": {
+            "programText": {"type": "string", "minLength": 1, "maxLength": 100000},
+            "goodEventsLabel": {"const": "GOOD"},
+            "totalEventsLabel": {"const": "TOTAL"}
+          }
+        },
+        "targets": {
+          "type": "array", "minItems": 1, "maxItems": 1,
+          "items": {"$ref": "#/$defs/target"}
+        }
+      }
+    },
+    "target": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "compliancePeriod", "slo", "sloAlertRules"],
+      "properties": {
+        "type": {"const": "RollingWindow"},
+        "compliancePeriod": {"const": "30d"},
+        "slo": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 100},
+        "sloAlertRules": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "prefixItems": [
+            {"$ref": "#/$defs/breach_group"},
+            {"$ref": "#/$defs/burn_group"}
+          ],
+          "items": false
+        }
+      }
+    },
+    "breach_group": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "rules"],
+      "properties": {
+        "type": {"const": "BREACH"},
+        "rules": {
+          "type": "array", "minItems": 1, "maxItems": 1,
+          "items": {"$ref": "#/$defs/breach_rule"}
+        }
+      }
+    },
+    "burn_group": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "rules"],
+      "properties": {
+        "type": {"const": "BURN_RATE"},
+        "rules": {
+          "type": "array", "minItems": 1, "maxItems": 1,
+          "items": {"$ref": "#/$defs/burn_rule"}
+        }
+      }
+    },
+    "breach_rule": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "description", "detectLabel", "disabled", "notifications", "parameters", "severity"
+      ],
+      "properties": {
+        "description": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "detectLabel": {"type": "string", "pattern": "^migration_breach_[a-f0-9]{16}$"},
+        "disabled": {"const": true},
+        "notifications": {"const": []},
+        "parameters": {
+          "type": "object", "additionalProperties": false,
+          "required": ["fireLasting"],
+          "properties": {"fireLasting": {"const": "3m"}}
+        },
+        "severity": {"enum": ["Critical", "Major", "Minor", "Warning", "Info"]}
+      }
+    },
+    "burn_rule": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "description", "detectLabel", "disabled", "notifications", "parameters", "severity"
+      ],
+      "properties": {
+        "description": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "detectLabel": {"type": "string", "pattern": "^migration_[a-f0-9]{16}$"},
+        "disabled": {"const": true},
+        "notifications": {"const": []},
+        "parameters": {
+          "type": "object", "additionalProperties": false,
+          "required": ["burnRateThreshold_1", "burnRateThreshold_2"],
+          "properties": {
+            "burnRateThreshold_1": {"const": 14.4},
+            "burnRateThreshold_2": {"const": 6}
+          }
+        },
+        "severity": {"enum": ["Critical", "Major", "Minor", "Warning", "Info"]}
+      }
+    },
+    "safety": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "create_only", "updates_authorized", "deletes_authorized",
+        "alert_rules_disabled", "notifications_enabled"
+      ],
+      "properties": {
+        "create_only": {"const": true},
+        "updates_authorized": {"const": false},
+        "deletes_authorized": {"const": false},
+        "alert_rules_disabled": {"const": true},
+        "notifications_enabled": {"const": false}
+      }
+    }
+  }
+}

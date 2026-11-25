@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/observability/dashboard-browser-validation.schema.json",
+  "title": "Dashboard browser validation evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "session_id", "result_hash", "checked_at", "dashboards", "evidence_hash"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "session_id": {"type": "string", "minLength": 8},
+    "result_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "evidence_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "dashboards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["object_ref", "target_id_hash", "checks", "passed"],
+        "properties": {
+          "object_ref": {"type": "string", "minLength": 1},
+          "target_id_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "passed": {"const": true},
+          "checks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["title_match", "chart_count_match", "no_render_errors", "compact_layout", "source_geometry_preserved"],
+            "properties": {
+              "title_match": {"const": true},
+              "chart_count_match": {"const": true},
+              "no_render_errors": {"const": true},
+              "compact_layout": {"const": true},
+              "source_geometry_preserved": {"const": true}
+            }
+          }
+        }
+      }
+    }
+  }
+}
