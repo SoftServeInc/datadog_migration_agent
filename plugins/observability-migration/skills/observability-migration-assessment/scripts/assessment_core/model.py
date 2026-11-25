@@ -1,0 +1,47 @@
+"""Authoritative workflow enums shared by assessment and execution."""
+
+from __future__ import annotations
+
+from enum import Enum
+
+
+class Compatibility(str, Enum):
+    DIRECT = "DIRECT"
+    TRANSFORMABLE = "TRANSFORMABLE"
+    PARTIAL = "PARTIAL"
+    REQUIRES_REDESIGN = "REQUIRES_REDESIGN"
+    MANUAL = "MANUAL"
+    UNSUPPORTED = "UNSUPPORTED"
+    UNKNOWN = "UNKNOWN"
+    BLOCKED_BY_PERMISSIONS = "BLOCKED_BY_PERMISSIONS"
+    BLOCKED_BY_DEPENDENCY = "BLOCKED_BY_DEPENDENCY"
+
+
+class Disposition(str, Enum):
+    MIGRATE = "MIGRATE"
+    ADAPT = "ADAPT"
+    REDESIGN = "REDESIGN"
+    RETIRE = "RETIRE"
+    SKIP = "SKIP"
+    DEFER = "DEFER"
+
+
+class SessionState(str, Enum):
+    DISCOVERY = "DISCOVERY"
+    PLAN_REVIEW = "PLAN_REVIEW"
+    WAITING_PLAN_APPROVAL = "WAITING_PLAN_APPROVAL"
+    MIGRATING = "MIGRATING"
+    VALIDATING = "VALIDATING"
+    REVIEW_READY = "REVIEW_READY"
+    WAITING_FINAL_APPROVAL = "WAITING_FINAL_APPROVAL"
+    COMPLETED = "COMPLETED"
+    ROLLING_BACK = "ROLLING_BACK"
+    ROLLED_BACK = "ROLLED_BACK"
+    FAILED = "FAILED"
+
+
+class ValidationState(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    PASSED = "PASSED"
+    FAILED = "FAILED"

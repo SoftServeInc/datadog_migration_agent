@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Compatibility Assessment"
+  short_description: "Classify Datadog objects for Splunk targets"
+  default_prompt: "Use $observability-compatibility-assessment to classify this sanitized inventory for the configured Splunk targets."

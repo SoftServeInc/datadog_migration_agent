@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cisco-innovation:observability:migration-plan:1.1",
+  "title": "Non-executable observability migration plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mode", "strategy", "assessment_hash", "target", "execution_enabled", "mutating_operations", "steps", "summary", "approval", "safety", "plan_hash"],
+  "properties": {
+    "schema_version": {"const": "1.1"},
+    "mode": {"const": "dry_run"},
+    "strategy": {"enum": ["full", "safe_staged", "customer_selected"]},
+    "assessment_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "target": {"enum": ["splunk_observability_cloud", "splunk_platform", "both"]},
+    "execution_enabled": {"const": false},
+    "mutating_operations": {"type": "array", "maxItems": 0},
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sequence", "object_ref", "object_type", "target", "compatibility", "disposition", "confidence_score", "proposed_operation", "proposed_target_representation", "dependency_count", "dependency_cycle_member", "validation_strategy", "rollback_strategy", "executable"],
+        "properties": {"executable": {"const": false}},
+        "additionalProperties": true
+      }
+    },
+    "summary": {"type": "object"},
+    "approval": {
+      "type": "object",
+      "properties": {
+        "required_for_any_future_execution": {"const": true},
+        "plan_review_approved": {"const": false},
+        "external_mutations_authorized": {"const": false}
+      },
+      "required": ["required_for_any_future_execution", "plan_review_approved", "external_mutations_authorized"]
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "source_mutations_enabled": {"const": false},
+        "target_mutations_enabled": {"const": false},
+        "terraform_apply_enabled": {"const": false},
+        "git_write_enabled": {"const": false}
+      },
+      "required": ["source_mutations_enabled", "target_mutations_enabled", "terraform_apply_enabled", "git_write_enabled"]
+    },
+    "plan_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

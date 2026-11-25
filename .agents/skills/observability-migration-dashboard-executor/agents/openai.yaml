@@ -1,0 +1,7 @@
+interface:
+  display_name: "Observability Dashboard Migration Executor"
+  short_description: "Internal dashboard migration adapter"
+  default_prompt: "Use $observability-migration-dashboard-executor internally to compile, execute, and browser-validate dashboard operations under the orchestrator's migration authorization."
+
+policy:
+  allow_implicit_invocation: false

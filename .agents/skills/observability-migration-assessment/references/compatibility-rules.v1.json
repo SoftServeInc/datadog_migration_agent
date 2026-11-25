@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "rules": [
+    {
+      "rule_id": "CR-001",
+      "object_types": ["synthetic"],
+      "complexities": ["*"],
+      "compatibility": "REQUIRES_REDESIGN",
+      "disposition": "REDESIGN",
+      "rationale_code": "SYNTHETIC_REDESIGN"
+    },
+    {
+      "rule_id": "CR-002",
+      "object_types": ["log_index", "log_pipeline"],
+      "complexities": ["*"],
+      "compatibility": "PARTIAL",
+      "disposition": "ADAPT",
+      "rationale_code": "LOG_SEMANTICS_ADAPTATION"
+    },
+    {
+      "rule_id": "CR-003",
+      "object_types": ["dashboard", "monitor", "slo"],
+      "complexities": ["high"],
+      "compatibility": "PARTIAL",
+      "disposition": "ADAPT",
+      "rationale_code": "HIGH_COMPLEXITY_ADAPTATION"
+    },
+    {
+      "rule_id": "CR-004",
+      "object_types": ["dashboard", "monitor", "slo"],
+      "complexities": ["low", "medium"],
+      "compatibility": "TRANSFORMABLE",
+      "disposition": "ADAPT",
+      "rationale_code": "CONTROL_PLANE_TRANSLATION"
+    },
+    {
+      "rule_id": "CR-999",
+      "object_types": ["*"],
+      "complexities": ["*"],
+      "compatibility": "UNKNOWN",
+      "disposition": "DEFER",
+      "rationale_code": "INSUFFICIENT_EVIDENCE"
+    }
+  ]
+}

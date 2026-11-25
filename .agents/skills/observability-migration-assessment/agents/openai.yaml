@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Migration Orchestrator"
+  short_description: "Orchestrate the complete read-only migration flow"
+  default_prompt: "Use $observability-migration-assessment to orchestrate a resumable Datadog-to-Splunk assessment without changing either platform."

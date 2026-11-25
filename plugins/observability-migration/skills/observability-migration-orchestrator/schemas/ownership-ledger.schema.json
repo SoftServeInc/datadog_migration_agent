@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/observability/ownership-ledger.schema.json",
+  "title": "Observability migration ownership and rollback ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "session_id", "bundle_hash", "entries", "ledger_hash"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "session_id": {"type": "string", "minLength": 1},
+    "bundle_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "ledger_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation_id", "adapter", "object_ref", "object_type", "target_id", "target_id_hash", "disposition", "payload_hash", "dependencies", "before_state_file"],
+        "properties": {
+          "operation_id": {"type": "string", "minLength": 1},
+          "adapter": {"type": "string", "minLength": 1},
+          "object_ref": {"type": "string", "minLength": 1},
+          "object_type": {"type": "string", "minLength": 1},
+          "target_id": {"type": "string", "minLength": 1},
+          "target_id_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "disposition": {"enum": ["CREATED", "UPDATED", "REUSED", "NO_OP"]},
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "before_state_file": {"type": ["string", "null"]},
+          "dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        }
+      }
+    }
+  }
+}

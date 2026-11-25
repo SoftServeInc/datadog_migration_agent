@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cisco-innovation:observability:inventory-ir:1.0",
+  "title": "Privacy-safe observability inventory IR",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_platform", "objects", "graph", "summary", "hygiene", "safety"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_platform": {"const": "datadog"},
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["object_ref", "object_type", "behavior_ref", "status", "complexity", "complexity_score", "risk_level", "effort_points", "owner_present", "signal_types", "behavior_features", "dependencies", "evidence_class"],
+        "properties": {
+          "object_ref": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"},
+          "object_type": {"enum": ["dashboard", "monitor", "slo", "synthetic", "log_index", "log_pipeline", "unknown"]},
+          "behavior_ref": {"type": "string", "pattern": "^behavior_[a-f0-9]{16}$"},
+          "status": {"type": "string"},
+          "complexity": {"enum": ["low", "medium", "high", "unknown"]},
+          "complexity_score": {"type": "integer", "minimum": 0, "maximum": 100},
+          "risk_level": {"enum": ["low", "medium", "high"]},
+          "effort_points": {"type": "integer", "minimum": 1, "maximum": 13},
+          "owner_present": {"type": "boolean"},
+          "signal_types": {"type": "array", "items": {"type": "string"}},
+          "behavior_features": {"type": "object"},
+          "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}},
+          "evidence_class": {"const": "api_observed"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "graph": {"type": "object"},
+    "summary": {"type": "object"},
+    "hygiene": {"type": "object"},
+    "safety": {"$ref": "#/$defs/safety"}
+  },
+  "$defs": {
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_ref", "relationship", "resolved"],
+      "properties": {
+        "object_ref": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"},
+        "relationship": {"const": "depends_on"},
+        "resolved": {"type": "boolean"}
+      }
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "raw_identifiers_included": {"const": false},
+        "raw_expressions_included": {"const": false},
+        "pii_included": {"const": false},
+        "external_mutations_enabled": {"const": false}
+      },
+      "required": ["raw_identifiers_included", "raw_expressions_included", "pii_included", "external_mutations_enabled"],
+      "additionalProperties": false
+    }
+  }
+}

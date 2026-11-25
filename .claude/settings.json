@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(curl:*)",
+      "Bash(helm search:*)",
+      "Bash(helm show:*)",
+      "Bash(helm repo:*)",
+      "Bash(helm template:*)",
+      "Bash(helm lint:*)",
+      "Bash(kubectl get:*)",
+      "Bash(kubectl describe:*)",
+      "Bash(kubectl logs:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(awk:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(jq:*)",
+      "Bash(yq:*)",
+      "Bash(find:*)",
+      "Bash(shellcheck:*)",
+      "Bash(scripts/verify-mcp.sh:*)",
+      "Bash(make verify-mcp:*)"
+    ]
+  }
+}

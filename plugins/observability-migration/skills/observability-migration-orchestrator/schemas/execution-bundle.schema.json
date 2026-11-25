@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/observability/execution-bundle.schema.json",
+  "title": "Immutable observability migration execution bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "session_id", "plan_hash", "target_binding", "operations", "created_at", "bundle_hash"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "session_id": {"type": "string", "minLength": 1},
+    "plan_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "bundle_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "target_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "organization_id_hash"],
+      "properties": {
+        "origin": {"type": "string", "pattern": "^https://"},
+        "organization_id_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation_id", "object_ref", "object_type", "adapter", "action", "status", "dependencies", "payload_hash", "adapter_input", "validation", "rollback"],
+        "properties": {
+          "operation_id": {"type": "string", "minLength": 1},
+          "object_ref": {"type": "string", "minLength": 1},
+          "object_type": {"type": "string", "minLength": 1},
+          "adapter": {"type": "string", "minLength": 1},
+          "action": {"enum": ["CREATE", "UPDATE", "UPSERT", "REUSE", "NO_OP", "DEFER"]},
+          "status": {"enum": ["SUPPORTED", "PARTIAL", "UNSUPPORTED", "BLOCKED"]},
+          "dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "payload_hash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "adapter_input": {"type": "object"},
+          "validation": {"type": "array", "items": {"type": "object"}},
+          "rollback": {"type": "object"}
+        }
+      }
+    }
+  }
+}

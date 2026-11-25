@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Observability Migration Control Center</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --navy: #17345c;
+      --navy-2: #224873;
+      --blue: #2f6fed;
+      --blue-soft: #eaf1ff;
+      --green: #087a55;
+      --green-soft: #e5f7ef;
+      --amber: #9a5a06;
+      --amber-soft: #fff4d8;
+      --red: #b3261e;
+      --red-soft: #fdebe9;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #dce2ea;
+      --panel: #ffffff;
+      --canvas: #f4f6f9;
+      --shadow: 0 10px 28px rgba(25, 43, 68, .08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px/1.45 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(47, 111, 237, .28);
+      outline-offset: 2px;
+    }
+    .shell { min-height: 520px; background: var(--canvas); }
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.3fr) minmax(280px, 2fr);
+      background: var(--navy);
+      color: white;
+    }
+    .brand { padding: 26px 28px; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #a9d8ff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(24px, 4vw, 38px); line-height: 1.06; letter-spacing: -.025em; }
+    .subtitle { margin: 10px 0 0; max-width: 520px; color: #d7e4f2; }
+    .headline-state {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 24px 28px;
+      background: rgba(255, 255, 255, .055);
+      border-left: 1px solid rgba(255,255,255,.12);
+    }
+    .phase-kicker { color: #b9d0e8; font-size: 11px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+    .phase-title { margin-top: 4px; font-size: 22px; font-weight: 760; }
+    .state-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 999px;
+      color: #dff8ec;
+      white-space: nowrap;
+    }
+    .state-dot { width: 9px; height: 9px; border-radius: 50%; background: #70d9a8; box-shadow: 0 0 0 4px rgba(112,217,168,.13); }
+
+    .content { padding: 22px; }
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .step {
+      min-width: 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #e9edf3;
+      color: #697386;
+      font-weight: 720;
+    }
+    .step small { display: block; margin-bottom: 2px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .step.active { background: var(--blue-soft); color: #174caa; }
+    .step.done { background: var(--green-soft); color: var(--green); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .metric, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .metric { padding: 16px; }
+    .metric-label { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .metric-value { margin-top: 5px; font-size: 25px; font-weight: 780; letter-spacing: -.025em; }
+    .metric-note { margin-top: 3px; color: var(--muted); font-size: 12px; }
+
+    .action-panel { padding: 18px; margin-bottom: 16px; }
+    .action-layout { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    .section-title { margin: 0; font-size: 17px; font-weight: 770; }
+    .section-copy { margin: 5px 0 0; color: var(--muted); }
+    .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .button {
+      appearance: none;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 9px 13px;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+      font-weight: 730;
+      transition: transform .12s ease, opacity .12s ease;
+    }
+    .button:hover { transform: translateY(-1px); }
+    .button:disabled { cursor: wait; opacity: .58; transform: none; }
+    .button.secondary { background: white; color: #31557e; border-color: #c9d3df; }
+    .button.danger { background: white; color: var(--red); border-color: #e8b5b1; }
+    .button.compact { padding: 7px 10px; font-size: 12px; }
+
+    .progress-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 15px; }
+    .progress-item { padding: 11px 12px; background: #f7f9fb; border: 1px solid #e5e9ef; border-radius: 12px; }
+    .progress-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 720; }
+    .bar { height: 7px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: #dfe5ed; }
+    .bar > span { display: block; height: 100%; min-width: 0; border-radius: inherit; background: var(--blue); transition: width .25s ease; }
+
+    .tabs { display: flex; gap: 4px; margin: 0 0 12px; padding: 4px; width: fit-content; background: #e9edf3; border-radius: 11px; }
+    .tab { border: 0; border-radius: 8px; padding: 8px 12px; background: transparent; color: #5d6879; cursor: pointer; font-weight: 720; }
+    .tab.active { background: white; color: var(--ink); box-shadow: 0 1px 5px rgba(18,38,63,.1); }
+    .view[hidden] { display: none !important; }
+
+    .resources-panel { overflow: hidden; }
+    .resource-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .filters { display: flex; gap: 8px; }
+    .search, .select {
+      min-height: 38px;
+      border: 1px solid #cdd5df;
+      border-radius: 9px;
+      background: white;
+      color: var(--ink);
+    }
+    .search { width: min(300px, 48vw); padding: 8px 11px; }
+    .select { padding: 7px 28px 7px 9px; }
+    .table-wrap { overflow: auto; max-height: 410px; }
+    table { width: 100%; border-collapse: collapse; min-width: 850px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #edf0f4; text-align: left; vertical-align: top; }
+    th { position: sticky; top: 0; z-index: 1; background: #f8fafc; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .resource-name { max-width: 280px; font-weight: 730; overflow-wrap: anywhere; }
+    .resource-detail { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .chip { display: inline-flex; padding: 4px 8px; border-radius: 999px; background: #edf1f6; color: #455268; font-size: 11px; font-weight: 730; white-space: nowrap; }
+    .chip.good { background: var(--green-soft); color: var(--green); }
+    .chip.warn { background: var(--amber-soft); color: var(--amber); }
+    .chip.bad { background: var(--red-soft); color: var(--red); }
+    .empty { padding: 34px 20px; color: var(--muted); text-align: center; }
+
+    .info-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; }
+    .info-panel { padding: 18px; }
+    .notice-list { display: grid; gap: 9px; margin-top: 13px; }
+    .notice { padding: 11px 12px; border-left: 3px solid #d1dae5; background: #f8fafc; border-radius: 0 10px 10px 0; }
+    .notice.warning { border-color: #e5a930; background: #fffaf0; }
+    .notice.failure { border-color: #d75a52; background: #fff6f5; }
+    .kv { display: grid; grid-template-columns: minmax(120px, .8fr) 1.2fr; gap: 8px 14px; margin-top: 14px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; font-weight: 680; overflow-wrap: anywhere; }
+    .footer { display: flex; justify-content: space-between; gap: 16px; padding: 14px 2px 0; color: var(--muted); font-size: 11px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 800px) {
+      .masthead { grid-template-columns: 1fr; }
+      .headline-state { border-left: 0; border-top: 1px solid rgba(255,255,255,.12); }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .action-layout, .resource-toolbar { align-items: stretch; flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .brand, .headline-state { padding: 20px; }
+      .content { padding: 14px; }
+      .stepper { grid-template-columns: repeat(2, 1fr); }
+      .metrics, .progress-grid { grid-template-columns: 1fr; }
+      .filters { flex-direction: column; }
+      .search { width: 100%; }
+      .footer { flex-direction: column; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #eef2f7; --muted: #aeb9c8; --line: #3c4655; --panel: #202631; --canvas: #151a22;
+        --blue-soft: #19345d; --green-soft: #173c31; --amber-soft: #4a381c; --red-soft: #4a2927;
+        --shadow: 0 10px 28px rgba(0,0,0,.18);
+      }
+      .step { background: #2a313d; }
+      .metric, .panel { background: var(--panel); }
+      .button.secondary, .button.danger, .search, .select { background: #252d38; color: var(--ink); }
+      .progress-item, .notice { background: #282f3a; border-color: #3b4553; }
+      .notice.warning { background: #332b1d; }
+      .notice.failure { background: #352321; }
+      .tabs { background: #2a313d; }
+      .tab.active { background: #3a4350; color: white; }
+      th { background: #252c36; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div class="brand">
+        <p class="eyebrow">Migration control center</p>
+        <h1>Datadog → Splunk</h1>
+        <p class="subtitle">Governed migration with checkpoint recovery, API validation, and session-scoped rollback.</p>
+      </div>
+      <div class="headline-state">
+        <div>
+          <div class="phase-kicker">Current stage</div>
+          <div class="phase-title" id="phaseTitle">Ready to start</div>
+        </div>
+        <div class="state-pill"><span class="state-dot"></span><span id="stateLabel">Awaiting action</span></div>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="stepper" id="stepper" aria-label="Migration stages"></div>
+
+      <section class="metrics" aria-label="Key metrics">
+        <article class="metric"><div class="metric-label">Resources</div><div class="metric-value" id="resourcesValue">0</div><div class="metric-note" id="resourcesNote">not discovered yet</div></article>
+        <article class="metric"><div class="metric-label">Compatible</div><div class="metric-value" id="compatibleValue">0</div><div class="metric-note">direct or transformable</div></article>
+        <article class="metric"><div class="metric-label">Migrated</div><div class="metric-value" id="migratedValue">0</div><div class="metric-note" id="migratedNote">API validation pending</div></article>
+        <article class="metric"><div class="metric-label">Warnings</div><div class="metric-value" id="warningsValue">0</div><div class="metric-note">require attention</div></article>
+      </section>
+
+      <section class="panel action-panel">
+        <div class="action-layout">
+          <div>
+            <h2 class="section-title">Next safe action</h2>
+            <p class="section-copy" id="currentOperation">Control center opened.</p>
+            <p class="section-copy"><strong id="nextAction">Start a read-only assessment.</strong></p>
+          </div>
+          <div class="actions" id="actions"></div>
+        </div>
+        <div class="progress-grid" id="progressGrid"></div>
+        <div class="notice" id="terraformExport" hidden></div>
+      </section>
+
+      <nav class="tabs" aria-label="Control center sections">
+        <button class="tab active" data-tab="resources">Resources</button>
+        <button class="tab" data-tab="evidence">Risks & evidence</button>
+        <button class="tab" data-tab="details">Details</button>
+      </nav>
+
+      <section class="view" data-view="resources">
+        <article class="panel resources-panel">
+          <div class="resource-toolbar">
+            <div>
+              <h2 class="section-title">Migration components</h2>
+              <p class="section-copy" id="resourceCaption">Names from local inventory; IDs and queries are hidden.</p>
+            </div>
+            <div class="filters">
+              <label><span class="sr-only">Search components</span><input class="search" id="search" type="search" placeholder="Search by name"></label>
+              <label><span class="sr-only">Filter by type</span><select class="select" id="typeFilter"><option value="">All types</option></select></label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Type</th><th>Compatibility</th><th>Target</th><th>Risk</th><th>Validation</th></tr></thead>
+              <tbody id="resourceRows"></tbody>
+            </table>
+            <div class="empty" id="resourceEmpty">No resources yet. Start a read-only assessment.</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" data-view="evidence" hidden>
+        <div class="info-grid">
+          <article class="panel info-panel"><h2 class="section-title">Warnings</h2><div class="notice-list" id="warningList"></div></article>
+          <article class="panel info-panel"><h2 class="section-title">Diagnostics</h2><div class="notice-list" id="failureList"></div></article>
+        </div>
+      </section>
+
+      <section class="view" data-view="details" hidden>
+        <article class="panel info-panel">
+          <h2 class="section-title">Workflow state</h2>
+          <dl class="kv">
+            <dt>Stage</dt><dd id="detailPhase">—</dd>
+            <dt>Current operation</dt><dd id="detailOperation">—</dd>
+            <dt>Next action</dt><dd id="detailNext">—</dd>
+            <dt>API validation</dt><dd id="detailApi">—</dd>
+            <dt>Browser validation</dt><dd id="detailBrowser">—</dd>
+          </dl>
+        </article>
+      </section>
+
+      <footer class="footer"><span>Datadog remains read-only.</span><span>Names are shown without source IDs, queries, credentials, or action tokens.</span></footer>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+      const pending = new Map();
+      let requestId = 1;
+      let snapshot = window.openai?.toolOutput || {
+        phase: "READY", status: "READY", environment: "Not selected", currentOperation: "Control center opened.",
+        nextAction: "Start a read-only assessment.", warnings: [], failureDiagnostics: [],
+        progress: { dashboards: {total:0,migrated:0,validated:0,failed:0}, monitors: {total:0,migrated:0,validated:0,failed:0}, queries: {total:0,migrated:0,validated:0,failed:0} },
+        resourceSummary: { total: 0, compatible: 0, byType: {}, byCompatibility: {} },
+        workflow: { validation: { api: "PENDING", browser: "NOT_STARTED" } }
+      };
+      let metadata = window.openai?.toolResponseMetadata || { resourceRows: [], actionBindings: [] };
+      let busy = false;
+      let confirmationKey = "";
+
+      const $ = (id) => document.getElementById(id);
+      const safeArray = (value) => Array.isArray(value) ? value : [];
+      const safeObject = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+      const asText = (value, fallback = "—") => typeof value === "string" && value.trim() ? value.trim() : fallback;
+      const asCount = (value) => Number.isFinite(Number(value)) && Number(value) >= 0 ? Math.trunc(Number(value)) : 0;
+
+      const phaseNames = {
+        READY: "Ready to start", DISCOVERY: "Discovery", PLAN_REVIEW: "Plan review",
+        WAITING_PLAN_APPROVAL: "Scope approval", MIGRATING: "Migration",
+        VALIDATING: "Validation", REVIEW_READY: "Preparing results",
+        WAITING_FINAL_APPROVAL: "Final review", COMPLETED: "Completed",
+        FAILED: "Needs attention", ROLLING_BACK: "Rollback", ROLLED_BACK: "Rolled back"
+      };
+      const typeNames = { dashboard: "Dashboard", monitor: "Monitor", slo: "SLO", synthetic: "Synthetic", log_index: "Log index", log_pipeline: "Log pipeline", unknown: "Other" };
+      const steps = [
+        { id: "discovery", label: "Discovery", phases: ["DISCOVERY"], done: ["PLAN_REVIEW","WAITING_PLAN_APPROVAL","MIGRATING","VALIDATING","REVIEW_READY","WAITING_FINAL_APPROVAL","COMPLETED","ROLLING_BACK","ROLLED_BACK"] },
+        { id: "plan", label: "Plan review", phases: ["PLAN_REVIEW","WAITING_PLAN_APPROVAL"], done: ["MIGRATING","VALIDATING","REVIEW_READY","WAITING_FINAL_APPROVAL","COMPLETED","ROLLING_BACK","ROLLED_BACK"] },
+        { id: "migration", label: "Migration", phases: ["MIGRATING","VALIDATING"], done: ["REVIEW_READY","WAITING_FINAL_APPROVAL","COMPLETED","ROLLING_BACK","ROLLED_BACK"] },
+        { id: "results", label: "Results", phases: ["REVIEW_READY","WAITING_FINAL_APPROVAL","COMPLETED","ROLLING_BACK","ROLLED_BACK"], done: ["COMPLETED","ROLLED_BACK"] }
+      ];
+
+      function rpc(method, params) {
+        const id = requestId++;
+        window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+        return new Promise((resolve, reject) => pending.set(id, { resolve, reject }));
+      }
+
+      function chipClass(value) {
+        const text = String(value || "").toUpperCase();
+        if (["DIRECT", "TRANSFORMABLE", "PASSED", "LOW", "COMPLETED"].includes(text)) return "good";
+        if (["PARTIAL", "MEDIUM", "PENDING", "NOT_STARTED", "SKIPPED"].includes(text)) return "warn";
+        if (text.startsWith("BLOCKED") || ["HIGH", "FAILED"].includes(text)) return "bad";
+        return "";
+      }
+
+      function renderSteps(phase) {
+        const root = $("stepper"); root.replaceChildren();
+        steps.forEach((item, index) => {
+          const node = document.createElement("div");
+          node.className = "step" + (item.phases.includes(phase) ? " active" : item.done.includes(phase) ? " done" : "");
+          const small = document.createElement("small"); small.textContent = `0${index + 1}`;
+          const label = document.createElement("span"); label.textContent = item.label;
+          node.append(small, label); root.append(node);
+        });
+      }
+
+      function progressTotals() {
+        const progress = safeObject(snapshot.progress);
+        const dashboards = safeObject(progress.dashboards);
+        const monitors = safeObject(progress.monitors);
+        return {
+          total: asCount(dashboards.total) + asCount(monitors.total),
+          migrated: asCount(dashboards.migrated) + asCount(monitors.migrated),
+          validated: asCount(dashboards.validated) + asCount(monitors.validated)
+        };
+      }
+
+      function renderProgress() {
+        const root = $("progressGrid"); root.replaceChildren();
+        const progress = safeObject(snapshot.progress);
+        [["dashboards","Dashboards"],["monitors","Monitors"],["queries","Queries"]].forEach(([key,label]) => {
+          const value = safeObject(progress[key]);
+          const total = asCount(value.total), migrated = asCount(value.migrated), validated = asCount(value.validated);
+          const pct = total ? Math.min(100, Math.round((Math.max(migrated, validated) / total) * 100)) : 0;
+          const card = document.createElement("div"); card.className = "progress-item";
+          const head = document.createElement("div"); head.className = "progress-head";
+          const name = document.createElement("span"); name.textContent = label;
+          const count = document.createElement("span"); count.textContent = `${migrated}/${total}`;
+          const bar = document.createElement("div"); bar.className = "bar";
+          const fill = document.createElement("span"); fill.style.width = `${pct}%`;
+          bar.append(fill); head.append(name,count); card.append(head,bar); root.append(card);
+        });
+      }
+
+      async function runBinding(binding) {
+        if (busy || !binding || typeof binding !== "object") return;
+        const key = JSON.stringify([binding.kind, binding.tool, binding.label, binding.arguments?.action_id]);
+        if (binding.confirmation && confirmationKey !== key) {
+          confirmationKey = key;
+          renderActions();
+          return;
+        }
+        confirmationKey = "";
+        busy = true; renderActions();
+        try {
+          if (binding.kind !== "tool" || !binding.tool) throw new Error("Unsupported UI action");
+          const args = safeObject(binding.arguments);
+          const result = window.openai?.callTool
+            ? await window.openai.callTool(binding.tool, args)
+            : await rpc("tools/call", { name: binding.tool, arguments: args });
+          if (result?.structuredContent) snapshot = result.structuredContent;
+          if (result?._meta) metadata = result._meta;
+        } catch (error) {
+          snapshot = { ...snapshot, warnings: [...safeArray(snapshot.warnings), `UI action failed: ${asText(error?.message, "unknown error")}`] };
+        } finally {
+          busy = false; render();
+        }
+      }
+
+      function renderActions() {
+        const root = $("actions"); root.replaceChildren();
+        const bindings = safeArray(metadata.actionBindings);
+        if (!bindings.length) {
+          const button = document.createElement("button"); button.className = "button secondary"; button.type = "button";
+          button.textContent = "Open fullscreen";
+          button.onclick = () => window.openai?.requestDisplayMode?.({ mode: "fullscreen" });
+          root.append(button); return;
+        }
+        bindings.forEach((binding) => {
+          const key = JSON.stringify([binding.kind, binding.tool, binding.label, binding.arguments?.action_id]);
+          const confirming = Boolean(binding.confirmation && confirmationKey === key);
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `button ${binding.style === "danger" ? "danger" : binding.style === "secondary" ? "secondary" : ""}`;
+          button.textContent = confirming ? `Confirm: ${asText(binding.label, "Run action")}` : asText(binding.label, "Run action");
+          button.title = confirming ? asText(binding.confirmation, "Confirm this action") : "";
+          button.disabled = busy || (Boolean(confirmationKey) && !confirming);
+          button.onclick = () => runBinding(binding);
+          root.append(button);
+        });
+        if (confirmationKey) {
+          const cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "button secondary";
+          cancel.textContent = "Cancel"; cancel.disabled = busy;
+          cancel.onclick = () => { confirmationKey = ""; renderActions(); };
+          root.append(cancel);
+        }
+        if (window.openai?.requestDisplayMode) {
+          const button = document.createElement("button"); button.type = "button"; button.className = "button secondary compact";
+          button.textContent = "Expand"; button.disabled = busy;
+          button.onclick = () => window.openai.requestDisplayMode({ mode: "fullscreen" });
+          root.append(button);
+        }
+      }
+
+      function renderResources() {
+        const rows = safeArray(metadata.resourceRows);
+        const query = $("search").value.trim().toLocaleLowerCase();
+        const type = $("typeFilter").value;
+        const filtered = rows.filter((row) => {
+          const item = safeObject(row);
+          return (!type || item.type === type) && (!query || asText(item.name, "").toLocaleLowerCase().includes(query));
+        });
+        const body = $("resourceRows"); body.replaceChildren();
+        filtered.forEach((raw) => {
+          const row = safeObject(raw); const tr = document.createElement("tr");
+          const nameCell = document.createElement("td");
+          const name = document.createElement("div"); name.className = "resource-name"; name.textContent = asText(row.name, "Untitled");
+          const detail = document.createElement("div"); detail.className = "resource-detail"; detail.textContent = asText(row.approach, "Assessment pending");
+          nameCell.append(name, detail);
+          const values = [typeNames[row.type] || asText(row.type,"Other"), row.compatibility, row.targetRepresentation, row.risk, row.validation];
+          tr.append(nameCell);
+          values.forEach((value, index) => {
+            const td = document.createElement("td"); const chip = document.createElement("span");
+            chip.className = `chip ${index === 1 || index === 3 || index === 4 ? chipClass(value) : ""}`;
+            chip.textContent = asText(value); td.append(chip); tr.append(td);
+          });
+          body.append(tr);
+        });
+        $("resourceEmpty").hidden = filtered.length > 0;
+        $("resourceCaption").textContent = rows.length
+          ? `${filtered.length} of ${rows.length} components. Source IDs, queries, and payloads are hidden.`
+          : "Names will appear after read-only discovery.";
+      }
+
+      function renderNotices() {
+        const warnings = safeArray(snapshot.warnings);
+        const diagnostics = safeArray(snapshot.failureDiagnostics);
+        const add = (root, values, kind, emptyText) => {
+          root.replaceChildren();
+          if (!values.length) { const node = document.createElement("div"); node.className = "notice"; node.textContent = emptyText; root.append(node); return; }
+          values.forEach((value) => {
+            const node = document.createElement("div"); node.className = `notice ${kind}`;
+            node.textContent = typeof value === "string" ? value : asText(value.message || value.rootCause || value.code, "Needs attention");
+            root.append(node);
+          });
+        };
+        add($("warningList"), warnings, "warning", "No active warnings.");
+        add($("failureList"), diagnostics, "failure", "No failures recorded.");
+      }
+
+      function renderTerraformExport() {
+        const value = safeObject(snapshot.terraformExport);
+        const node = $("terraformExport");
+        if (!value.directory) {
+          node.hidden = true;
+          node.textContent = "";
+          return;
+        }
+        node.hidden = false;
+        node.textContent = `Terraform ready: ${asCount(value.resourceCount)} resources in ${asText(value.directory)}`;
+      }
+
+      function refreshTypeOptions() {
+        const select = $("typeFilter"); const current = select.value;
+        const types = [...new Set(safeArray(metadata.resourceRows).map((row) => row?.type).filter(Boolean))].sort();
+        select.replaceChildren(); const all = document.createElement("option"); all.value = ""; all.textContent = "All types"; select.append(all);
+        types.forEach((type) => { const option = document.createElement("option"); option.value = type; option.textContent = typeNames[type] || type; select.append(option); });
+        if (types.includes(current)) select.value = current;
+      }
+
+      function render() {
+        const phase = asText(snapshot.phase || snapshot.status, "READY");
+        const summary = safeObject(snapshot.resourceSummary);
+        const totals = progressTotals();
+        $("phaseTitle").textContent = phaseNames[phase] || phase;
+        $("stateLabel").textContent = phase === "FAILED"
+          ? "Needs attention"
+          : phase === "COMPLETED"
+            ? "Complete"
+            : asText(snapshot.environment, "Checkpoint active");
+        $("resourcesValue").textContent = String(asCount(summary.total) || totals.total);
+        $("resourcesNote").textContent = asCount(summary.total) ? "in the current plan" : "not discovered yet";
+        $("compatibleValue").textContent = String(asCount(summary.compatible));
+        $("migratedValue").textContent = String(totals.migrated);
+        $("migratedNote").textContent = `${totals.validated} validated`;
+        $("warningsValue").textContent = String(safeArray(snapshot.warnings).length + safeArray(snapshot.failureDiagnostics).length);
+        $("currentOperation").textContent = asText(snapshot.currentOperation, "No active operation.");
+        $("nextAction").textContent = asText(snapshot.nextAction, "Wait for an update.");
+        $("detailPhase").textContent = phaseNames[phase] || phase;
+        $("detailOperation").textContent = asText(snapshot.currentOperation);
+        $("detailNext").textContent = asText(snapshot.nextAction);
+        const validation = safeObject(safeObject(snapshot.workflow).validation);
+        $("detailApi").textContent = asText(validation.api);
+        $("detailBrowser").textContent = asText(validation.browser);
+        renderSteps(phase); renderProgress(); renderActions(); refreshTypeOptions(); renderResources(); renderNotices(); renderTerraformExport();
+        window.openai?.notifyIntrinsicHeight?.();
+      }
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== window.parent) return;
+        const message = event.data;
+        if (!message || message.jsonrpc !== "2.0") return;
+        if (message.id !== undefined && pending.has(message.id)) {
+          const waiter = pending.get(message.id); pending.delete(message.id);
+          if (message.error) waiter.reject(message.error); else waiter.resolve(message.result); return;
+        }
+        if (message.method === "ui/notifications/tool-result") {
+          if (message.params?.structuredContent) snapshot = message.params.structuredContent;
+          if (message.params?._meta) metadata = message.params._meta;
+          render();
+        }
+      }, { passive: true });
+
+      document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === button));
+        document.querySelectorAll(".view").forEach((view) => { view.hidden = view.dataset.view !== button.dataset.tab; });
+        window.openai?.setWidgetState?.({ selectedTab: button.dataset.tab });
+        window.openai?.notifyIntrinsicHeight?.();
+      }));
+      $("search").addEventListener("input", renderResources);
+      $("typeFilter").addEventListener("change", renderResources);
+      render();
+    })();
+  </script>
+</body>
+</html>

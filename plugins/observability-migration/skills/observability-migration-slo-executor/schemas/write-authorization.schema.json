@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cisco-innovation.local/schemas/slo-write-authorization.schema.json",
+  "title": "SLO write authorization",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "approval_id", "approval_scope", "actor_role", "approved_at",
+    "expires_at", "source_session_id", "plan_hash", "plan_review_approval_hash",
+    "manifest_hash", "target", "target_origin", "target_org_id_hash", "wave_id",
+    "selected_refs", "max_creates", "allowed_operations", "conflict_policy",
+    "execution_contract", "external_mutations_authorized", "updates_authorized",
+    "deletes_authorized", "approval_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "approval_id": {"type": "string", "pattern": "^write-approval-[a-f0-9]{16}$"},
+    "approval_scope": {"const": "splunk_observability_slo_create_wave"},
+    "actor_role": {"enum": ["customer", "authorized_operator"]},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "source_session_id": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{7,63}$"},
+    "plan_hash": {"$ref": "#/$defs/hash"},
+    "plan_review_approval_hash": {"$ref": "#/$defs/hash"},
+    "manifest_hash": {"$ref": "#/$defs/hash"},
+    "target": {"const": "splunk_observability_cloud"},
+    "target_origin": {
+      "type": "string",
+      "pattern": "^https://api\\.[a-z]{2,4}[0-9]{1,2}\\.observability\\.splunkcloud\\.com$"
+    },
+    "target_org_id_hash": {"$ref": "#/$defs/hash"},
+    "wave_id": {"type": "string", "pattern": "^slo-wave-[a-zA-Z0-9][a-zA-Z0-9_-]{2,27}$"},
+    "selected_refs": {
+      "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"}
+    },
+    "max_creates": {"const": 1},
+    "allowed_operations": {"const": ["CREATE_SLO", "VALIDATE_SLO"]},
+    "conflict_policy": {"const": "fail_closed"},
+    "execution_contract": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "customer_approved_manifest", "slo_created_with_disabled_alerts",
+        "notifications_disabled"
+      ],
+      "properties": {
+        "customer_approved_manifest": {"const": true},
+        "slo_created_with_disabled_alerts": {"const": true},
+        "notifications_disabled": {"const": true}
+      }
+    },
+    "external_mutations_authorized": {"const": true},
+    "updates_authorized": {"const": false},
+    "deletes_authorized": {"const": false},
+    "approval_hash": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

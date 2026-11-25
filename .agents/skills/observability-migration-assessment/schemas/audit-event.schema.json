@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cisco-innovation:observability:audit-event:1.0",
+  "title": "Privacy-safe local audit event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "timestamp", "event_type", "outcome", "session_id", "approval_id", "counts", "safety"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "event_type": {"enum": ["authorization_granted", "live_preflight_completed", "discovery_started", "discovery_completed", "discovery_failed", "capability_catalog_generated", "plan_review_approved"]},
+    "outcome": {"enum": ["approved", "success", "partial", "failed", "blocked"]},
+    "session_id": {"type": "string"},
+    "approval_id": {"type": ["string", "null"]},
+    "counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["secrets_included", "raw_customer_data_included"],
+      "properties": {
+        "secrets_included": {"const": false},
+        "raw_customer_data_included": {"const": false}
+      }
+    }
+  }
+}

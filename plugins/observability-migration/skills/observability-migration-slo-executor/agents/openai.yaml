@@ -1,0 +1,7 @@
+interface:
+  display_name: "Observability SLO Executor"
+  short_description: "Internal SLO migration adapter"
+  default_prompt: "Use $observability-migration-slo-executor internally to compile and execute SLO operations under the orchestrator's migration authorization."
+
+policy:
+  allow_implicit_invocation: false

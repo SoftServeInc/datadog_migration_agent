@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cisco-innovation.local/schemas/write-authorization.schema.json",
+  "title": "Splunk detector write authorization",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "approval_id", "approval_scope", "actor_role", "approved_at", "expires_at", "source_session_id", "plan_hash", "plan_review_approval_hash", "manifest_hash", "target", "target_origin", "target_org_id_hash", "wave_id", "selected_refs", "max_creates", "allowed_operations", "conflict_policy", "execution_contract", "external_mutations_authorized", "updates_authorized", "deletes_authorized", "approval_hash"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "approval_id": {"type": "string", "pattern": "^write-approval-[a-f0-9]{16}$"},
+    "approval_scope": {"const": "splunk_observability_create_wave"},
+    "actor_role": {"enum": ["customer", "authorized_operator"]},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "source_session_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{7,63}$"},
+    "plan_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "plan_review_approval_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "manifest_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "target": {"const": "splunk_observability_cloud"},
+    "target_origin": {"type": "string", "pattern": "^https://api\\.[a-z]{2,4}[0-9]{1,2}\\.observability\\.splunkcloud\\.com$"},
+    "target_org_id_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "wave_id": {"type": "string", "pattern": "^wave-[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"},
+    "selected_refs": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^obj_[a-f0-9]{16}$"}},
+    "max_creates": {"type": "integer", "minimum": 1, "maximum": 10},
+    "allowed_operations": {"const": ["CREATE_DETECTOR", "VALIDATE_DETECTOR"]},
+    "conflict_policy": {"const": "fail_closed"},
+    "execution_contract": {"const": {"customer_approved_manifest": true, "detectors_created_disabled": true, "notifications_disabled": true}},
+    "external_mutations_authorized": {"const": true},
+    "updates_authorized": {"const": false},
+    "deletes_authorized": {"const": false},
+    "approval_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

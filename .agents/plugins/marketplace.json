@@ -1,0 +1,20 @@
+{
+  "name": "cisco-innovation",
+  "interface": {
+    "displayName": "Cisco Innovation"
+  },
+  "plugins": [
+    {
+      "name": "observability-migration",
+      "source": {
+        "source": "local",
+        "path": "./plugins/observability-migration"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

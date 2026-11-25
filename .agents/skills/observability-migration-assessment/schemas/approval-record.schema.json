@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cisco-innovation:observability:approval-record:1.0",
+  "title": "Local approval record",
+  "type": "object",
+  "required": ["schema_version", "approval_id", "session_id", "actor_role", "approval_hash", "external_mutations_authorized"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "approval_id": {"type": "string", "pattern": "^approval-[a-f0-9]{16}$"},
+    "session_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{7,63}$"},
+    "actor_role": {"enum": ["customer", "authorized_operator"]},
+    "approval_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "external_mutations_authorized": {"const": false},
+    "execution_authorized": {"const": false}
+  },
+  "additionalProperties": true
+}
